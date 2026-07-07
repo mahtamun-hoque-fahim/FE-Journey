@@ -1,0 +1,14 @@
+# Node modules (if we later add a backend)
+node_modules/
+
+# Environment variables
+.env
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor junk
+.vscode/
+*.swp
+*.swo
