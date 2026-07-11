@@ -1,4 +1,31 @@
-/* Base */
+/* ── CSS Variables ── */
+:root {
+  --bg: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  --surface: #ffffff;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --input-border: #d1d5db;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-note: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="dark"] {
+  --bg: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+  --surface: #1e293b;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --input-border: #475569;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-note: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Base ── */
 *,
 *::before,
 *::after {
@@ -10,43 +37,84 @@ body {
   min-height: 100vh;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.5;
-  color: #1f2937;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  color: var(--text);
+  background: var(--bg);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Header */
+/* ── Header ── */
 .header {
   padding: 2rem 1.5rem 1rem;
   text-align: center;
 }
 
-.header h1 {
+.header__inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.header__text {
+  flex: 1;
+  text-align: center;
+}
+
+.header__text h1 {
   margin: 0 0 0.5rem;
   font-size: clamp(1.75rem, 4vw, 2.25rem);
 }
 
 .header__subtitle {
   margin: 0;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
-/* Layout */
+.header__settings-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header__settings-btn:hover {
+  color: var(--accent);
+  background: var(--surface);
+}
+
+/* ── Layout ── */
 .main {
   width: min(720px, 100%);
   margin: 0 auto;
   padding: 0 1.5rem 2rem;
 }
 
-/* Note form */
+/* ── View toggle ── */
+.view--hidden {
+  display: none;
+}
+
+/* ── Note form / card shared ── */
 .note-form {
   display: grid;
   gap: 0.75rem;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .note-form__label {
@@ -57,7 +125,9 @@ body {
   width: 100%;
   padding: 0.875rem 1rem;
   font: inherit;
-  border: 1px solid #d1d5db;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   resize: vertical;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -65,11 +135,11 @@ body {
 
 .note-form__input:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-/* Buttons */
+/* ── Buttons ── */
 .btn {
   justify-self: start;
   padding: 0.625rem 1.125rem;
@@ -83,15 +153,25 @@ body {
 
 .btn--primary {
   color: #ffffff;
-  background: #4f46e5;
+  background: var(--accent);
 }
 
 .btn--primary:hover {
-  background: #4338ca;
+  background: var(--accent-hover);
 }
 
 .btn--primary:active {
   transform: translateY(1px);
+}
+
+.btn--secondary {
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.btn--secondary:hover {
+  background: var(--border);
 }
 
 .btn--danger {
@@ -103,7 +183,7 @@ body {
   background: #dc2626;
 }
 
-/* Notes list */
+/* ── Notes list ── */
 .notes__heading {
   margin: 0 0 1rem;
   font-size: 1.125rem;
@@ -121,9 +201,9 @@ body {
   margin: 0;
   padding: 1.5rem;
   text-align: center;
-  color: #6b7280;
-  background: #ffffff;
-  border: 1px dashed #d1d5db;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--input-border);
   border-radius: 12px;
 }
 
@@ -131,15 +211,15 @@ body {
   display: none;
 }
 
-/* Note card */
+/* ── Note card ── */
 .note-card {
   display: grid;
   gap: 0.75rem;
   padding: 1rem 1.125rem;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--shadow-note);
 }
 
 .note-card__content {
@@ -151,7 +231,7 @@ body {
 .note-card__meta {
   margin: 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .note-card__actions {
@@ -159,6 +239,82 @@ body {
   justify-content: flex-end;
 }
 
+/* ── Settings form ── */
+.settings-form__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.settings-form__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.form__group {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.form__label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form__input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.form__error {
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.form__error--hidden {
+  display: none;
+}
+
+.form__success {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.form__success--hidden {
+  display: none;
+}
+
+/* ── Theme toggle ── */
+.theme-toggle {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.theme-toggle__option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
 @media (max-width: 600px) {
   .header,
   .main {

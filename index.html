@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,26 +8,73 @@
 </head>
 <body>
   <header class="header">
-    <h1>My Note App</h1>
-    <p class="header__subtitle">Capture ideas and keep them in your browser.</p>
+    <div class="header__inner">
+      <div class="header__text">
+        <h1>My Note App</h1>
+        <p class="header__subtitle">Capture ideas and keep them in your browser.</p>
+      </div>
+      <button type="button" id="settingsToggleBtn" class="header__settings-btn" aria-label="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
   </header>
 
   <main class="main">
-    <section class="note-form" aria-label="Add a new note">
-      <label class="note-form__label" for="noteInput">New note</label>
-      <textarea
-        id="noteInput"
-        class="note-form__input"
-        placeholder="Write your note here..."
-        rows="4"
-      ></textarea>
-      <button type="button" id="addNoteBtn" class="btn btn--primary">Add Note</button>
+    <!-- Notes view -->
+    <section id="notesView">
+      <section class="note-form" aria-label="Add a new note">
+        <label class="note-form__label" for="noteInput">New note</label>
+        <textarea
+          id="noteInput"
+          class="note-form__input"
+          placeholder="Write your note here..."
+          rows="4"
+        ></textarea>
+        <button type="button" id="addNoteBtn" class="btn btn--primary">Add Note</button>
+      </section>
+      <section class="notes" aria-label="Your notes">
+        <h2 class="notes__heading">Your Notes</h2>
+        <ul id="notesList" class="notes__list"></ul>
+        <p id="emptyState" class="notes__empty">No notes yet. Add one above to get started.</p>
+      </section>
     </section>
 
-    <section class="notes" aria-label="Your notes">
-      <h2 class="notes__heading">Your Notes</h2>
-      <ul id="notesList" class="notes__list"></ul>
-      <p id="emptyState" class="notes__empty">No notes yet. Add one above to get started.</p>
+    <!-- Settings view -->
+    <section id="settingsView" class="view--hidden">
+      <div class="note-form settings-form">
+        <div class="settings-form__header">
+          <button type="button" id="settingsBackBtn" class="btn btn--secondary">← Back</button>
+          <h2 class="settings-form__title">Settings</h2>
+        </div>
+        <form id="settingsForm" novalidate>
+          <div class="form__group">
+            <label class="form__label" for="displayName">Display Name</label>
+            <input type="text" id="displayName" class="form__input" placeholder="Your name" autocomplete="name" />
+            <span class="form__error form__error--hidden" id="displayNameError"></span>
+          </div>
+          <div class="form__group">
+            <label class="form__label" for="emailInput">Email</label>
+            <input type="email" id="emailInput" class="form__input" placeholder="you@example.com" autocomplete="email" />
+            <span class="form__error form__error--hidden" id="emailError"></span>
+          </div>
+          <div class="form__group">
+            <span class="form__label">Theme</span>
+            <div class="theme-toggle">
+              <label class="theme-toggle__option">
+                <input type="radio" name="theme" value="light" checked /> Light
+              </label>
+              <label class="theme-toggle__option">
+                <input type="radio" name="theme" value="dark" /> Dark
+              </label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary">Save Settings</button>
+          <p class="form__success form__success--hidden" id="settingsSuccess">Settings saved!</p>
+        </form>
+      </div>
     </section>
   </main>
 
