@@ -1,8 +1,35 @@
 const STORAGE_KEY = 'notes';
+const SETTINGS_KEY = 'noteAppSettings';
+
 const noteInput = document.getElementById('noteInput');
 const addNoteBtn = document.getElementById('addNoteBtn');
 const notesList = document.getElementById('notesList');
 const emptyState = document.getElementById('emptyState');
+const notesView = document.getElementById('notesView');
+const settingsView = document.getElementById('settingsView');
+const settingsBtn = document.getElementById('settingsBtn');
+const backBtn = document.getElementById('backBtn');
+const darkModeToggle = document.getElementById('darkModeToggle');
+const sortOrderSelect = document.getElementById('sortOrderSelect');
+const clearNotesBtn = document.getElementById('clearNotesBtn');
+
+const defaultSettings = {
+  darkMode: false,
+  sortOrder: 'newest',
+};
+
+const loadSettings = () => {
+  const storedSettings = localStorage.getItem(SETTINGS_KEY);
+  return storedSettings
+    ? { ...defaultSettings, ...JSON.parse(storedSettings) }
+    : { ...defaultSettings };
+};
+
+let settings = loadSettings();
+
+const saveSettings = () => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+};
 
 const loadNotes = () => {
   const storedNotes = localStorage.getItem(STORAGE_KEY);
@@ -24,6 +51,14 @@ const formatDate = (isoDate) => {
 
 const createNoteId = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+};
+
+const getSortedNotes = () => {
+  const sorted = [...notes];
+  if (settings.sortOrder === 'oldest') {
+    sorted.reverse();
+  }
+  return sorted;
 };
 
 const toggleEmptyState = () => {
@@ -51,7 +86,7 @@ const createNoteElement = (note) => {
 
 const renderNotes = () => {
   notesList.innerHTML = '';
-  notes.forEach((note) => {
+  getSortedNotes().forEach((note) => {
     notesList.appendChild(createNoteElement(note));
   });
   toggleEmptyState();
@@ -92,6 +127,44 @@ const handleNotesListClick = (event) => {
   deleteNote(noteCard.dataset.id);
 };
 
+const applyTheme = () => {
+  document.body.classList.toggle('theme--dark', settings.darkMode);
+};
+
+const syncSettingsForm = () => {
+  darkModeToggle.checked = settings.darkMode;
+  sortOrderSelect.value = settings.sortOrder;
+};
+
+const showView = (viewName) => {
+  const isSettings = viewName === 'settings';
+  notesView.classList.toggle('view--hidden', isSettings);
+  settingsView.classList.toggle('view--hidden', !isSettings);
+};
+
+const clearAllNotes = () => {
+  const confirmed = window.confirm(
+    'Delete all notes? This cannot be undone.'
+  );
+  if (!confirmed) return;
+
+  notes = [];
+  saveNotes();
+  renderNotes();
+};
+
+const handleDarkModeChange = () => {
+  settings.darkMode = darkModeToggle.checked;
+  saveSettings();
+  applyTheme();
+};
+
+const handleSortOrderChange = () => {
+  settings.sortOrder = sortOrderSelect.value;
+  saveSettings();
+  renderNotes();
+};
+
 addNoteBtn.addEventListener('click', addNote);
 
 noteInput.addEventListener('keydown', (event) => {
@@ -102,5 +175,12 @@ noteInput.addEventListener('keydown', (event) => {
 });
 
 notesList.addEventListener('click', handleNotesListClick);
+settingsBtn.addEventListener('click', () => showView('settings'));
+backBtn.addEventListener('click', () => showView('notes'));
+darkModeToggle.addEventListener('change', handleDarkModeChange);
+sortOrderSelect.addEventListener('change', handleSortOrderChange);
+clearNotesBtn.addEventListener('click', clearAllNotes);
 
+applyTheme();
+syncSettingsForm();
 renderNotes();
