@@ -1,14 +1,6 @@
 export default function SearchPage() {
   return (
-    <div className="relative flex flex-1 flex-col items-center overflow-hidden">
-      <div
-        className="pointer-events-none absolute left-1/2 top-32 h-[700px] w-[700px] -translate-x-1/2 rounded-full opacity-70 blur-[120px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(61,244,154,0.16) 0%, rgba(61,244,154,0.05) 45%, rgba(61,244,154,0) 70%)",
-        }}
-      />
-
+    <div className="relative flex flex-1 flex-col items-center">
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center gap-6 px-4 py-20 text-center sm:px-6">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           Recipe Finder
