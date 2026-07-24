@@ -1,70 +1,45 @@
-# My Note App
+# Flavorly
 
-A lightweight, browser-based note-taking app built with vanilla HTML, CSS, and JavaScript. Notes are saved locally in your browser using `localStorage` — no backend or account required.
+A recipe discovery app built with Next.js 16, powered by TheMealDB API. This is the capstone project for the FlyRank.ai Frontend AI Engineering internship.
 
-Built as part of an internship project at [FlyRank.ai](https://flyrank.ai).
+## Current status
 
-## Features
+Capstone skeleton (routing, layout, design tokens, health-check) is scaffolded and deployable. Full data wiring, favorites persistence, and auth land in later assignments.
 
-- Add notes from a simple textarea form
-- Delete notes individually
-- Automatic persistence with `localStorage`
-- Responsive, card-based UI
-- Keyboard shortcut: `Ctrl+Enter` / `Cmd+Enter` to add a note
+## Routes
 
-## Tech Stack
+| Route | Purpose |
+|---|---|
+| `/` | Home, featured recipes |
+| `/search` | Search and filter recipes |
+| `/recipe/[id]` | Recipe detail |
+| `/favorites` | Saved recipes (placeholder, auth pending) |
+| `/health` | Health-check page, confirms live TheMealDB fetch |
 
-| Layer       | Technology              |
-|-------------|-------------------------|
-| Markup      | HTML5                   |
-| Styling     | CSS3                    |
-| Logic       | Vanilla JavaScript (ES6+) |
-| Persistence | Browser `localStorage`  |
+## Tech stack
 
-No frameworks or build tools — open the files and run.
+- Next.js 16 (App Router, Turbopack)
+- TypeScript
+- Tailwind CSS v4
+- TheMealDB API (free, no key required)
 
-## Project Structure
-
-```
-my-note-app/
-├── index.html   # App layout and markup
-├── style.css    # Component-based styles
-├── app.js       # Note logic and event handling
-└── README.md    # Project documentation
-```
-
-## Getting Started
-
-### Prerequisites
-
-- A modern web browser (Chrome, Firefox, Safari, or Edge)
-- [Git](https://git-scm.com/) (optional, for cloning)
-- [Node.js](https://nodejs.org/) (optional, only if using `npx serve`)
-
-### Run locally
-
-1. Clone the repository:
+## Getting started
 
 ```bash
-git clone https://github.com/mahtamun-hoque-fahim/FE-my-note-app.git
-cd FE-my-note-app
+git clone https://github.com/mahtamun-hoque-fahim/FE-Journey.git
+cd FE-Journey
+npm install
+npm run dev
 ```
 
-2. Open `index.html` in your browser, or serve the folder with a local server:
+Open `http://localhost:3000`.
 
-```bash
-npx serve .
-```
+## Project history
 
-3. Type a note and click **Add Note**. Your notes are saved automatically and will still be there when you reload the page.
+This repo also contains earlier internship assignments on separate branches:
 
-## Usage
-
-| Action    | How                                      |
-|-----------|------------------------------------------|
-| Add note  | Enter text and click **Add Note**        |
-| Quick add | Press `Ctrl+Enter` (Windows) or `Cmd+Enter` (Mac) |
-| Delete    | Click **Delete** on any note card        |
+- `feat/settings-vague`, `feat/settings-precise` — AI-assisted workflow drill (vague vs. precise prompting comparison)
+- `feat/recipe-app-v1` — original Vite/React recipe finder prototype, superseded by this Next.js build
 
 ## License
 
