@@ -17,7 +17,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/search"
-            className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-black transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
             Start searching
           </Link>

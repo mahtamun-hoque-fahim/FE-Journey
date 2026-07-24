@@ -1,51 +1,46 @@
-"use client";
-
-import { useState } from "react";
-
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-12 sm:px-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Search recipes
+    <div className="relative flex flex-1 flex-col items-center overflow-hidden">
+      <div
+        className="pointer-events-none absolute left-1/2 top-32 h-[700px] w-[700px] -translate-x-1/2 rounded-full opacity-70 blur-[120px]"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(61,244,154,0.16) 0%, rgba(61,244,154,0.05) 45%, rgba(61,244,154,0) 70%)",
+        }}
+      />
+
+      <div className="relative z-10 flex w-full max-w-2xl flex-col items-center gap-6 px-4 py-20 text-center sm:px-6">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          Recipe Finder
         </h1>
-        <p className="text-sm text-muted">
-          Placeholder screen. Real TheMealDB search wiring comes in a later
-          assignment.
+        <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+          <input
+            type="text"
+            disabled
+            placeholder="Search recipes..."
+            className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="button"
+            className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+          >
+            Search
+          </button>
+        </div>
+        <p className="text-xs text-muted">
+          Placeholder screen. Live search wiring comes in a later assignment.
         </p>
       </div>
 
-      <form
-        className="flex flex-col gap-3 sm:flex-row"
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <input
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Try 'chicken curry'"
-          className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
-        />
-        <button
-          type="submit"
-          className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-black transition-opacity hover:opacity-90"
-        >
-          Search
-        </button>
-      </form>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="relative z-10 grid w-full max-w-4xl grid-cols-2 gap-6 px-4 pb-20 sm:px-6">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
-            className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4"
+            className="flex flex-col overflow-hidden rounded-xl bg-surface"
           >
-            <div className="aspect-video w-full rounded-xl bg-surface-hover" />
-            <div className="flex flex-col gap-1">
+            <div className="aspect-square w-full bg-surface-hover" />
+            <div className="px-4 py-4">
               <div className="h-4 w-3/4 rounded bg-surface-hover" />
-              <div className="h-3 w-1/2 rounded bg-surface-hover" />
             </div>
           </div>
         ))}
