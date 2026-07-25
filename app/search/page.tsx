@@ -24,7 +24,7 @@ export default function SearchPage() {
         </p>
       </div>
 
-      <div className="relative z-10 grid w-full max-w-4xl grid-cols-2 gap-6 px-4 pb-20 sm:px-6">
+      <div className="relative z-10 grid w-full max-w-4xl grid-cols-2 gap-6 px-4 pb-20 sm:grid-cols-3 sm:px-6">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
