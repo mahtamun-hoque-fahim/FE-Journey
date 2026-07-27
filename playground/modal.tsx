@@ -12,11 +12,15 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     const dialogRef = useRef<HTMLDivElement>(null);
     const closeBtnRef = useRef<HTMLButtonElement>(null);
+    const triggerRef = useRef<HTMLElement | null>(null);
 
-    // Focus the close button when modal opens
+    // Store trigger element, focus close button on open, return focus on close
     useEffect(() => {
         if (isOpen) {
+            triggerRef.current = document.activeElement as HTMLElement;
             closeBtnRef.current?.focus();
+        } else {
+            triggerRef.current?.focus();
         }
     }, [isOpen]);
 
