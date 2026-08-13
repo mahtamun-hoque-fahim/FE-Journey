@@ -23,6 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${googleSans.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-background text-foreground">
