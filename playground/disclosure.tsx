@@ -14,6 +14,7 @@ export function Disclosure({ summary, children }: DisclosureProps) {
     <div className="rounded-xl border border-border bg-surface">
       <button
         type="button"
+        id="disclosure-btn"
         aria-expanded={open}
         aria-controls="disclosure-panel"
         onClick={() => setOpen((prev) => !prev)}
