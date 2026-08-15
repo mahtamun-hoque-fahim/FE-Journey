@@ -1,28 +1,52 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, isTextUIPart } from "ai";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChefHat, Send, Square, ArrowDown, Loader, TriangleAlert } from "lucide-react";
+import {
+  ChefHat,
+  Send,
+  Square,
+  ArrowDown,
+  Loader,
+  TriangleAlert,
+} from "lucide-react";
 import { Streamdown } from "streamdown";
 import { RecipeToolResult } from "@/components/recipe-tool-result";
 import type { SearchRecipesResult } from "@/lib/tools";
 
-// ── Tool-part sub-components ──────────────────────────────────────────────────
+// ── ai@7 (AI SDK v4) tool part shape for searchRecipes ───────────────────────
+// ToolUIPart<TOOLS> has type: `tool-${NAME}` with state/input/output/errorText
+// directly on the part — there is no nested `toolInvocation` wrapper.
+type SearchRecipesPart =
+  | { type: "tool-searchRecipes"; state: "input-streaming"; input?: { query?: string } }
+  | { type: "tool-searchRecipes"; state: "input-available"; input: { query: string } }
+  | { type: "tool-searchRecipes"; state: "output-available"; input: { query: string }; output: SearchRecipesResult }
+  | { type: "tool-searchRecipes"; state: "output-error"; input: { query: string }; errorText: string };
 
-// State 1 & 2: input is streaming in or fully available but not yet executed
+// ── Tool-lifecycle sub-components ─────────────────────────────────────────────
+
+// States 1 & 2: args streaming in, or args ready but execute() not yet done
 function ToolSearching({ query }: { query?: string }) {
   return (
     <div className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3">
       <Loader className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" />
       <span className="text-xs text-muted">
-        {query ? <>Searching for <span className="text-foreground">&ldquo;{query}&rdquo;</span>…</> : "Preparing search…"}
+        {query ? (
+          <>
+            Searching for{" "}
+            <span className="text-foreground">&ldquo;{query}&rdquo;</span>
+            &hellip;
+          </>
+        ) : (
+          "Preparing search\u2026"
+        )}
       </span>
     </div>
   );
 }
 
-// State 4: tool threw or returned an error inside the result object
+// State 4: execute() threw (output-error) or our controlled error (output.error)
 function ToolError({ message }: { message: string }) {
   return (
     <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
@@ -49,18 +73,17 @@ export default function AssistantPage() {
   const isBusy = status === "submitted" || status === "streaming";
   const lastMessage = messages[messages.length - 1];
 
-  // Thinking indicator and the first streamed token are a handoff, not a
-  // swap: keep the indicator up until the assistant message actually has
-  // visible text, so there's no blank flicker between the two.
+  // Keep the thinking indicator up until the first text token arrives so
+  // there is no blank frame between the dots and the streamed response.
   const isThinking =
     status === "submitted" ||
     (status === "streaming" &&
       lastMessage?.role === "assistant" &&
       !lastMessage.parts.some(
-        (part) => part.type === "text" && part.text.trim().length > 0
+        (part) => isTextUIPart(part) && part.text.trim().length > 0
       ));
 
-  // Pin to bottom only while the user is already at the bottom.
+  // Auto-scroll: pin to bottom only while the user is already there.
   useEffect(() => {
     if (autoScroll && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -70,7 +93,8 @@ export default function AssistantPage() {
   function handleScroll() {
     const el = scrollRef.current;
     if (!el) return;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const distanceFromBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight;
     setAutoScroll(distanceFromBottom < 80);
   }
 
@@ -93,7 +117,9 @@ export default function AssistantPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-1 min-h-0 flex-col px-4">
       <header className="flex items-center gap-2 border-b border-border py-4">
         <ChefHat className="h-5 w-5 text-accent" />
-        <h1 className="text-lg font-semibold text-foreground">Recipe Assistant</h1>
+        <h1 className="text-lg font-semibold text-foreground">
+          Recipe Assistant
+        </h1>
       </header>
 
       <div className="relative flex-1 min-h-0 overflow-hidden">
@@ -115,7 +141,7 @@ export default function AssistantPage() {
                 className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-surface px-4 py-2"
               >
                 {message.parts.map((part, index) =>
-                  part.type === "text" ? (
+                  isTextUIPart(part) ? (
                     <p
                       key={`${message.id}-${index}`}
                       className="whitespace-pre-wrap text-sm text-foreground"
@@ -130,54 +156,46 @@ export default function AssistantPage() {
                 <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                 <div className="min-w-0 flex-1 flex flex-col gap-3 text-sm text-foreground [&_a]:text-accent [&_h1]:mt-0 [&_h2]:mt-0 [&_h3]:mt-0">
                   {message.parts.map((part, index) => {
-                    // Text part — streamed markdown
-                    if (part.type === "text") {
-                      return (
-                        <Streamdown key={`${message.id}-${index}`}>
-                          {part.text}
-                        </Streamdown>
-                      );
+                    const key = `${message.id}-${index}`;
+
+                    // ── Text part: streamed markdown ──────────────────────────
+                    if (isTextUIPart(part)) {
+                      return <Streamdown key={key}>{part.text}</Streamdown>;
                     }
 
-                    // Tool-invocation part — four distinct states
-                    if (part.type === "tool-invocation") {
-                      const inv = part.toolInvocation;
+                    // ── Tool part: all four lifecycle states ──────────────────
+                    // ai@7: type literal is `tool-${toolName}`, not 'tool-invocation'
+                    if (part.type === "tool-searchRecipes") {
+                      const tp = part as unknown as SearchRecipesPart;
 
-                      // State 1: args still streaming in
-                      if (inv.state === "partial-call") {
+                      // State 1 — args still arriving token by token
+                      if (tp.state === "input-streaming") {
+                        return <ToolSearching key={key} />;
+                      }
+
+                      // State 2 — args complete, waiting for execute()
+                      if (tp.state === "input-available") {
                         return (
-                          <ToolSearching
-                            key={`${message.id}-${index}`}
-                          />
+                          <ToolSearching key={key} query={tp.input.query} />
                         );
                       }
 
-                      // State 2: args complete, waiting for execute()
-                      if (inv.state === "call") {
-                        return (
-                          <ToolSearching
-                            key={`${message.id}-${index}`}
-                            query={(inv.args as { query?: string })?.query}
-                          />
-                        );
-                      }
-
-                      // State 3 & 4: execute() returned — success or error
-                      if (inv.state === "result") {
-                        const res = inv.result as SearchRecipesResult | undefined;
-                        if (!res) return null;
+                      // State 3 — execute() returned successfully
+                      if (tp.state === "output-available") {
+                        const res = tp.output;
+                        // Controlled error path (API/network failure in execute)
                         if (res.error) {
-                          return (
-                            <ToolError
-                              key={`${message.id}-${index}`}
-                              message={res.error}
-                            />
-                          );
+                          return <ToolError key={key} message={res.error} />;
                         }
+                        return <RecipeToolResult key={key} result={res} />;
+                      }
+
+                      // State 4 — execute() threw an unhandled exception
+                      if (tp.state === "output-error") {
                         return (
-                          <RecipeToolResult
-                            key={`${message.id}-${index}`}
-                            result={res}
+                          <ToolError
+                            key={key}
+                            message={tp.errorText ?? "Search failed"}
                           />
                         );
                       }
@@ -190,6 +208,7 @@ export default function AssistantPage() {
             )
           )}
 
+          {/* Thinking indicator — transitions into streamed text, no blank frame */}
           {isThinking && (
             <div className="flex items-center gap-2">
               <ChefHat className="h-4 w-4 shrink-0 text-accent" />
@@ -208,6 +227,7 @@ export default function AssistantPage() {
           )}
         </div>
 
+        {/* Jump-to-latest affordance — appears when user has scrolled up */}
         {!autoScroll && (
           <button
             type="button"
@@ -227,7 +247,7 @@ export default function AssistantPage() {
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask about a recipe..."
+          placeholder="Ask about a recipe\u2026"
           disabled={isBusy}
           className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground outline-none transition-colors placeholder:text-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
         />
