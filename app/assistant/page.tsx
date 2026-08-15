@@ -3,8 +3,39 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChefHat, Send, Square, ArrowDown } from "lucide-react";
+import { ChefHat, Send, Square, ArrowDown, Loader, TriangleAlert } from "lucide-react";
 import { Streamdown } from "streamdown";
+import { RecipeToolResult } from "@/components/recipe-tool-result";
+import type { SearchRecipesResult } from "@/lib/tools";
+
+// ── Tool-part sub-components ──────────────────────────────────────────────────
+
+// State 1 & 2: input is streaming in or fully available but not yet executed
+function ToolSearching({ query }: { query?: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3">
+      <Loader className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" />
+      <span className="text-xs text-muted">
+        {query ? <>Searching for <span className="text-foreground">&ldquo;{query}&rdquo;</span>…</> : "Preparing search…"}
+      </span>
+    </div>
+  );
+}
+
+// State 4: tool threw or returned an error inside the result object
+function ToolError({ message }: { message: string }) {
+  return (
+    <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+      <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs font-medium text-red-400">Search failed</span>
+        <span className="text-xs text-red-400/70">{message}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AssistantPage() {
   const [input, setInput] = useState("");
@@ -29,9 +60,7 @@ export default function AssistantPage() {
         (part) => part.type === "text" && part.text.trim().length > 0
       ));
 
-  // Pin to bottom only while the user is already at the bottom. The
-  // moment they scroll up to read earlier messages, release the pin so
-  // incoming tokens don't yank them back down.
+  // Pin to bottom only while the user is already at the bottom.
   useEffect(() => {
     if (autoScroll && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -61,10 +90,6 @@ export default function AssistantPage() {
   }
 
   return (
-    // Not <main> - the root layout already renders one main landmark per
-    // page. flex-1 (not h-dvh) so this fills the space the layout's own
-    // <main> actually has left below the nav bar, instead of re-claiming
-    // the full viewport and pushing the input off-screen.
     <div className="mx-auto flex w-full max-w-2xl flex-1 min-h-0 flex-col px-4">
       <header className="flex items-center gap-2 border-b border-border py-4">
         <ChefHat className="h-5 w-5 text-accent" />
@@ -103,12 +128,63 @@ export default function AssistantPage() {
             ) : (
               <div key={message.id} className="flex items-start gap-2">
                 <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                <div className="min-w-0 flex-1 text-sm text-foreground [&_a]:text-accent [&_h1]:mt-0 [&_h2]:mt-0 [&_h3]:mt-0">
-                  {message.parts.map((part, index) =>
-                    part.type === "text" ? (
-                      <Streamdown key={`${message.id}-${index}`}>{part.text}</Streamdown>
-                    ) : null
-                  )}
+                <div className="min-w-0 flex-1 flex flex-col gap-3 text-sm text-foreground [&_a]:text-accent [&_h1]:mt-0 [&_h2]:mt-0 [&_h3]:mt-0">
+                  {message.parts.map((part, index) => {
+                    // Text part — streamed markdown
+                    if (part.type === "text") {
+                      return (
+                        <Streamdown key={`${message.id}-${index}`}>
+                          {part.text}
+                        </Streamdown>
+                      );
+                    }
+
+                    // Tool-invocation part — four distinct states
+                    if (part.type === "tool-invocation") {
+                      const inv = part.toolInvocation;
+
+                      // State 1: args still streaming in
+                      if (inv.state === "partial-call") {
+                        return (
+                          <ToolSearching
+                            key={`${message.id}-${index}`}
+                          />
+                        );
+                      }
+
+                      // State 2: args complete, waiting for execute()
+                      if (inv.state === "call") {
+                        return (
+                          <ToolSearching
+                            key={`${message.id}-${index}`}
+                            query={(inv.args as { query?: string })?.query}
+                          />
+                        );
+                      }
+
+                      // State 3 & 4: execute() returned — success or error
+                      if (inv.state === "result") {
+                        const res = inv.result as SearchRecipesResult | undefined;
+                        if (!res) return null;
+                        if (res.error) {
+                          return (
+                            <ToolError
+                              key={`${message.id}-${index}`}
+                              message={res.error}
+                            />
+                          );
+                        }
+                        return (
+                          <RecipeToolResult
+                            key={`${message.id}-${index}`}
+                            result={res}
+                          />
+                        );
+                      }
+                    }
+
+                    return null;
+                  })}
                 </div>
               </div>
             )
