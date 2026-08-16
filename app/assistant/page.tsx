@@ -39,7 +39,7 @@ function ToolSearching({ query }: { query?: string }) {
             &hellip;
           </>
         ) : (
-          "Preparing search\u2026"
+          "Preparing search…"
         )}
       </span>
     </div>
@@ -247,7 +247,7 @@ export default function AssistantPage() {
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask about a recipe\u2026"
+          placeholder="Ask about a recipe…"
           disabled={isBusy}
           className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground outline-none transition-colors placeholder:text-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
         />
