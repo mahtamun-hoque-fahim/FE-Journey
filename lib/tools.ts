@@ -32,6 +32,9 @@ export const searchRecipes = tool({
         "The ingredient or meal name to search for (e.g. 'chicken', 'pasta', 'tikka masala')"
       ),
   }),
+  // Cast [] to RecipeMeal[] in error paths so TypeScript infers a consistent
+  // return type across all branches — avoids the never[] vs RecipeMeal[] union
+  // that breaks tool() overload resolution in ai@7.
   execute: async ({ query }: { query: string }) => {
     try {
       const res = await fetch(
@@ -40,7 +43,10 @@ export const searchRecipes = tool({
       );
 
       if (!res.ok) {
-        return { meals: [], error: `TheMealDB returned ${res.status}` };
+        return {
+          meals: [] as RecipeMeal[],
+          error: `TheMealDB returned ${res.status}`,
+        };
       }
 
       const data = (await res.json()) as { meals: RawMeal[] | null };
@@ -55,7 +61,10 @@ export const searchRecipes = tool({
 
       return { meals, error: null };
     } catch {
-      return { meals: [], error: "Network error — could not reach TheMealDB" };
+      return {
+        meals: [] as RecipeMeal[],
+        error: "Network error — could not reach TheMealDB",
+      };
     }
   },
 });
