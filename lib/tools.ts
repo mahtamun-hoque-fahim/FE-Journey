@@ -25,7 +25,8 @@ export interface SearchRecipesResult {
 export const searchRecipes = tool({
   description:
     "Search for recipes by ingredient or meal name. Use this when the user asks what to cook, what recipes use a specific ingredient, or wants to find a particular dish.",
-  parameters: z.object({
+  // ai@7 renamed `parameters` → `inputSchema`.
+  inputSchema: z.object({
     query: z
       .string()
       .describe(
@@ -33,8 +34,7 @@ export const searchRecipes = tool({
       ),
   }),
   // Cast [] to RecipeMeal[] in error paths so TypeScript infers a consistent
-  // return type across all branches — avoids the never[] vs RecipeMeal[] union
-  // that breaks tool() overload resolution in ai@7.
+  // return type across all branches — avoids a never[] vs RecipeMeal[] union.
   execute: async ({ query }: { query: string }) => {
     try {
       const res = await fetch(
