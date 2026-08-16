@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import { streamText, convertToModelMessages, isStepCount, type UIMessage } from "ai";
 import { CHAT_MODEL, SYSTEM_PROMPT } from "@/lib/chat-config";
 import { searchRecipes } from "@/lib/tools";
 
@@ -14,8 +14,9 @@ export async function POST(req: Request) {
     system: SYSTEM_PROMPT,
     messages: await convertToModelMessages(messages),
     tools: { searchRecipes },
-    // Allow the model to call a tool and then respond in one round-trip.
-    maxSteps: 3,
+    // ai@7 replaces maxSteps with stopWhen + isStepCount.
+    // Allow up to 3 steps so the model can call a tool and then respond.
+    stopWhen: isStepCount(3),
   });
 
   return result.toUIMessageStreamResponse();
