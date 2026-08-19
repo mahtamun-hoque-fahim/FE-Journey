@@ -15,10 +15,20 @@ export function RecipeToolResult({ result }: Props) {
     );
   }
 
+  // ── No-results empty state ────────────────────────────────────────────────
+  // "No recipes found." alone is a dead end. Give the user a concrete next
+  // action — suggest broader terms they can actually try.
   if (result.meals.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface px-4 py-3">
-        <p className="text-sm text-muted">No recipes found. Try a different ingredient or dish name.</p>
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3">
+        <p className="text-sm text-foreground">No recipes found.</p>
+        <p className="text-xs text-muted">
+          Try a broader term — like{" "}
+          <span className="text-foreground">&ldquo;chicken&rdquo;</span>,{" "}
+          <span className="text-foreground">&ldquo;pasta&rdquo;</span>, or{" "}
+          <span className="text-foreground">&ldquo;rice&rdquo;</span> — instead
+          of a full dish name.
+        </p>
       </div>
     );
   }

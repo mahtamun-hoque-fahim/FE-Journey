@@ -24,9 +24,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${googleSans.variable} h-full antialiased`}
+      className={`${googleSans.variable} h-dvh antialiased`}
     >
-      <body className="relative min-h-full flex flex-col bg-background text-foreground">
+      {/* h-dvh instead of h-full: on mobile Safari, 100vh includes the
+          browser chrome (address bar, toolbar) and overflows the visible
+          area. dvh (dynamic viewport height) tracks the actual visible
+          height and updates when the on-screen keyboard appears. */}
+      <body className="relative min-h-dvh flex flex-col bg-background text-foreground">
         <BottomGlow />
         <NavBar />
         <main className="flex flex-1 flex-col">{children}</main>
