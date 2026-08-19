@@ -22,6 +22,17 @@
   --color-accent-faint: var(--accent-faint);
   --color-border: var(--border);
   --font-sans: var(--font-google-sans);
+
+  /* Shake: registered as a Tailwind utility so `animate-shake` works as a class */
+  --animate-shake: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
 }
 
 body {
