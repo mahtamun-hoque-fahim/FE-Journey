@@ -65,6 +65,31 @@ Defined in `lib/tools.ts`. Registered in `app/api/chat/route.ts` via `streamText
 | `result` (success) | execute returned meals | `RecipeToolResult` grid component |
 | `result` (error) | execute returned non-null error | Red error card with message |
 
+## FE-AA2: 3D Viewer (`/playground/3d-viewer`)
+
+An interactive 3D scene built with React Three Fiber and `@react-three/drei`.
+
+**What's in the scene:**
+- Animated procedural torus (donut) with 8 orbiting ingredient particles — no external model asset, zero network requests for the default view
+- Drag-and-drop any `.glb` / `.gltf` file onto the viewport to replace the default scene; the model is auto-centered and scaled via `<Bounds fit clip observe>`
+- Material configurator: color presets + custom picker, metalness, roughness, wireframe toggle
+- Environment lighting: 7 HDR presets (studio, city, forest, dawn, sunset, park, night) via `@react-three/drei`'s `Environment`
+- Auto-rotate toggle with speed control; OrbitControls with damping for orbit/zoom/pan
+- `prefers-reduced-motion: reduce` → Canvas unmounts, static SVG fallback renders instead
+
+**Performance notes:**
+- Three.js + R3F chunk is ~480 KB gzipped. The Canvas is wrapped in `next/dynamic` with `ssr: false` so it is code-split from every other route — zero cost to LCP on Home, Search, or Assistant pages.
+- Default scene is fully procedural; no GLB/HDR fetches until the user interacts with the environment selector or drops a file.
+- `dpr={[1, 2]}` caps pixel ratio at 2× retina. `performance={{ min: 0.5 }}` enables R3F's adaptive DPR, halving resolution under frame-rate pressure on mid-range mobile.
+- Object URLs created from dropped files are revoked when a new file is loaded or the component unmounts.
+
+**What I'd add with more time:**
+- DRACO/meshopt-compressed default model so users see a recognisable 3D object without uploading one
+- Post-processing bloom on high-metalness surfaces (`@react-three/postprocessing`)
+- Canvas `toDataURL` screenshot button
+- Per-mesh material editing (click to select a mesh, tweak independently)
+- Progress overlay during large GLB loads using `useProgress`
+
 ## Getting started
 
 ```bash
