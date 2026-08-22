@@ -70,6 +70,46 @@ function ToolError({ message }: { message: string }) {
   );
 }
 
+// ── Status announcer — AI-specific a11y ──────────────────────────────────────
+// Announces response completion to AT via a visually-hidden live region.
+// This fires once when streaming ends, not on every streamed character,
+// so the AT queue doesn't flood. role="status" implies aria-live="polite".
+function StatusAnnouncer({
+  status,
+  messages,
+  isBusy,
+}: {
+  status: string;
+  messages: ReturnType<typeof useChat>["messages"];
+  isBusy: boolean;
+}) {
+  const [announcement, setAnnouncement] = useState("");
+  const prevBusy = useRef(false);
+
+  useEffect(() => {
+    if (prevBusy.current && !isBusy && status === "idle") {
+      const lastAssistant = [...messages]
+        .reverse()
+        .find((m) => m.role === "assistant");
+      if (lastAssistant) {
+        const text = lastAssistant.parts
+          .filter(isTextUIPart)
+          .map((p) => p.text)
+          .join(" ")
+          .slice(0, 160);
+        setAnnouncement(text || "Response received.");
+      }
+    }
+    prevBusy.current = isBusy;
+  }, [isBusy, status, messages]);
+
+  return (
+    <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {announcement}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AssistantPage() {
@@ -143,30 +183,36 @@ export default function AssistantPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 min-h-0 flex-col px-4">
       <header className="flex items-center gap-2 border-b border-border py-4">
-        <ChefHat className="h-5 w-5 text-accent" />
+        <ChefHat className="h-5 w-5 text-accent" aria-hidden="true" />
         <h1 className="text-lg font-semibold text-foreground">
           Recipe Assistant
         </h1>
       </header>
 
+      {/* Visually-hidden live region announces streaming status to AT
+          without exposing every streamed character. Updated once per
+          response cycle via the useEffect below. */}
+      <StatusAnnouncer status={status} messages={messages} isBusy={isBusy} />
+
       <div className="relative flex-1 min-h-0 overflow-hidden">
-        {/* overscroll-y-contain stops the rubber-band scroll on mobile Safari
-            from propagating to the body and fighting the auto-scroll logic. */}
+        {/* role="log" implies aria-live="polite" + aria-relevant="additions".
+            New message bubbles are announced when added; streaming character
+            changes inside an existing bubble are not re-announced, which
+            avoids flooding the AT output queue. */}
         <div
           ref={scrollRef}
           onScroll={handleScroll}
+          role="log"
+          aria-label="Conversation history"
+          aria-busy={isBusy}
           className="flex h-full flex-col gap-5 overflow-y-auto overscroll-y-contain py-6"
         >
-          {/* ── First-run empty state ───────────────────────────────────────
-               A designed empty state gives the user a clear next action.
-               "No conversations yet." is a dead end; prompt chips are
-               conversation starters the user can tap and edit. */}
           {messages.length === 0 && (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-muted">
                 What&apos;s in your fridge? I&apos;ll figure out dinner.
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Suggested prompts">
                 {PROMPT_CHIPS.map((chip) => (
                   <button
                     key={chip}
@@ -200,17 +246,15 @@ export default function AssistantPage() {
               </div>
             ) : (
               <div key={message.id} className="flex items-start gap-2">
-                <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <ChefHat className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                 <div className="min-w-0 flex-1 flex flex-col gap-3 text-sm text-foreground [&_a]:text-accent [&_h1]:mt-0 [&_h2]:mt-0 [&_h3]:mt-0">
                   {message.parts.map((part, index) => {
                     const key = `${message.id}-${index}`;
 
-                    // ── Text part: streamed markdown ──────────────────────────
                     if (isTextUIPart(part)) {
                       return <Streamdown key={key}>{part.text}</Streamdown>;
                     }
 
-                    // ── Tool part: all four lifecycle states ──────────────────
                     if (part.type === "tool-searchRecipes") {
                       const tp = part as unknown as SearchRecipesPart;
 
@@ -249,11 +293,17 @@ export default function AssistantPage() {
             )
           )}
 
-          {/* Thinking indicator */}
+          {/* role="status" + aria-live="polite" announces the thinking state
+              once without repeating per-frame. motion-reduce disables the
+              animation but keeps the indicator visible. */}
           {isThinking && (
-            <div className="flex items-center gap-2">
-              <ChefHat className="h-4 w-4 shrink-0 text-accent" />
-              <div className="flex items-center gap-1">
+            <div
+              className="flex items-center gap-2"
+              role="status"
+              aria-label="Flavorly is thinking"
+            >
+              <ChefHat className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+              <div className="flex items-center gap-1" aria-hidden="true">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.3s] motion-reduce:animate-none" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.15s] motion-reduce:animate-none" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 motion-reduce:animate-none" />
@@ -261,14 +311,14 @@ export default function AssistantPage() {
             </div>
           )}
 
-          {/* ── Chat-level error state ────────────────────────────────────────
-               useChat surfaces API and network failures here. The retry
-               button calls clearError() + regenerate() — regenerate re-issues
-               the last request without adding a duplicate user message.
-               The brief's evaluation criterion: "a working retry". */}
+          {/* role="alert" causes immediate announcement regardless of
+              aria-live polite queue — errors are urgent information. */}
           {error && (
-            <div className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3"
+            >
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
               <div className="flex flex-col gap-2">
                 <div>
                   <p className="text-sm font-medium text-red-400">
@@ -283,7 +333,7 @@ export default function AssistantPage() {
                   onClick={handleRetry}
                   className="flex w-fit items-center gap-1.5 rounded-full border border-red-500/40 px-3 py-1 text-xs text-red-400 transition-colors hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                 >
-                  <RefreshCw className="h-3 w-3" />
+                  <RefreshCw className="h-3 w-3" aria-hidden="true" />
                   Retry
                 </button>
               </div>
@@ -291,14 +341,13 @@ export default function AssistantPage() {
           )}
         </div>
 
-        {/* Jump-to-latest affordance */}
         {!autoScroll && (
           <button
             type="button"
             onClick={jumpToLatest}
             className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-foreground shadow-lg backdrop-blur transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <ArrowDown className="h-3 w-3" />
+            <ArrowDown className="h-3 w-3" aria-hidden="true" />
             Jump to latest
           </button>
         )}
@@ -308,11 +357,18 @@ export default function AssistantPage() {
         onSubmit={handleSubmit}
         className="flex items-center gap-2 border-t border-border py-4"
       >
+        {/* aria-label is the accessible name; placeholder is only a hint
+            and is not read reliably by all screen reader / browser combos. */}
+        <label htmlFor="chat-input" className="sr-only">
+          Ask about a recipe
+        </label>
         <input
+          id="chat-input"
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder="Ask about a recipe…"
           disabled={isBusy}
+          autoComplete="off"
           className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground outline-none transition-colors placeholder:text-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
         />
         {isBusy ? (
@@ -322,7 +378,7 @@ export default function AssistantPage() {
             aria-label="Stop generating"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-foreground transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95"
           >
-            <Square className="h-4 w-4" />
+            <Square className="h-4 w-4" aria-hidden="true" />
           </button>
         ) : (
           <button
@@ -331,7 +387,7 @@ export default function AssistantPage() {
             aria-label="Send message"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-background transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95 disabled:pointer-events-none disabled:bg-surface disabled:text-muted"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </form>

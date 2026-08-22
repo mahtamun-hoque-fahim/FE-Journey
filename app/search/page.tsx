@@ -7,9 +7,10 @@ export default function SearchPage() {
         </h1>
         <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row">
           <input
-            type="text"
+            type="search"
             disabled
             placeholder="Search recipes..."
+            aria-label="Search recipes"
             className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
           />
           <button

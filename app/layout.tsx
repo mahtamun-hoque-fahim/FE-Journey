@@ -26,14 +26,20 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${googleSans.variable} h-dvh antialiased`}
     >
-      {/* h-dvh instead of h-full: on mobile Safari, 100vh includes the
-          browser chrome (address bar, toolbar) and overflows the visible
-          area. dvh (dynamic viewport height) tracks the actual visible
-          height and updates when the on-screen keyboard appears. */}
       <body className="relative min-h-dvh flex flex-col bg-background text-foreground">
+        {/* Skip link — first focusable element; invisible until focused.
+            Keyboard users press Tab → Enter to jump past the nav. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-background focus:outline-none"
+        >
+          Skip to main content
+        </a>
         <BottomGlow />
         <NavBar />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main id="main-content" className="flex flex-1 flex-col">
+          {children}
+        </main>
       </body>
     </html>
   );
