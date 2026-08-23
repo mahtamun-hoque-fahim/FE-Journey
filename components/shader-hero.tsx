@@ -303,7 +303,7 @@ export function ShaderHero({ children }: ShaderHeroProps) {
     // The CSS gradient is the prefers-reduced-motion fallback AND the
     // background shown before WebGL initialises — zero layout shift.
     <section
-      className="relative h-dvh overflow-hidden"
+      className="relative flex flex-1 flex-col overflow-hidden"
       style={{
         background:
           "linear-gradient(135deg, #020905 0%, #063d1a 45%, #010d05 100%)",
@@ -316,8 +316,8 @@ export function ShaderHero({ children }: ShaderHeroProps) {
         className="absolute inset-0 h-full w-full transition-opacity duration-700"
         style={{ opacity: 0 }}
       />
-      {/* Hero content sits above the canvas on z-index 10 */}
-      <div className="relative z-10">{children}</div>
+      {/* Hero content — flex-1 so it stretches to fill the section height */}
+      <div className="relative z-10 flex flex-1 flex-col">{children}</div>
     </section>
   );
 }

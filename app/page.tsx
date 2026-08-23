@@ -6,7 +6,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col">
       <ShaderHero>
         {/* Full-height layout: heading at top, cards at bottom */}
-        <div className="mx-auto flex h-full w-full max-w-5xl flex-col justify-between px-4 py-12 sm:px-6 sm:py-16">
+        <div className="mx-auto flex w-full flex-1 max-w-5xl flex-col justify-between px-4 py-12 sm:px-6 sm:py-16">
 
           {/* Hero text */}
           <div className="flex flex-col gap-4 pt-4">
