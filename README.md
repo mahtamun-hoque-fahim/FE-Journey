@@ -1,115 +1,188 @@
 # Flavorly
 
-A recipe discovery app built with Next.js 16, powered by TheMealDB API. This is the capstone project for the FlyRank.ai Frontend AI Engineering internship.
+AI-powered recipe assistant built as the FlyRank Frontend AI Engineering internship capstone.
 
-## Current status
+**Live URL:** https://fe-journey-gamma.vercel.app
 
-Capstone skeleton (routing, layout, design tokens, health-check) is scaffolded and deployable. Streaming AI chat interface and server-side tool calling are implemented. Full favorites persistence and auth land in later assignments.
+---
 
-## Routes
+## What it does
 
-| Route | Purpose |
+Flavorly connects to [TheMealDB](https://www.themealdb.com/) and wraps it with a streaming AI assistant. The assistant can search for recipes, suggest substitutions, explain techniques, and adapt meals for dietary needs — all in a real-time streaming chat interface.
+
+| Page | What happens |
 |---|---|
-| `/` | Home, featured recipes |
-| `/search` | Search and filter recipes |
-| `/recipe/[id]` | Recipe detail |
-| `/favorites` | Saved recipes (placeholder, auth pending) |
-| `/health` | Health-check page, confirms live TheMealDB fetch |
-| `/assistant` | Streaming AI recipe assistant with tool calling |
+| `/` | Fullscreen GLSL shader hero (mouse-interactive aurora) + quick-access cards |
+| `/search` | Live recipe search against TheMealDB API |
+| `/recipe/[id]` | Recipe detail — ingredients, instructions, category, area |
+| `/favorites` | Client-side saved recipes (localStorage) |
+| `/assistant` | Streaming AI chat with tool calling (searchRecipes) |
+| `/playground/3d-viewer` | Drag-and-drop GLB viewer with material configurator |
+| `/health` | API health-check endpoint status page |
 
-## Tech stack
+---
 
-- Next.js 16 (App Router, Turbopack)
-- TypeScript
-- Tailwind CSS v4
-- TheMealDB API (free, no key required)
-- Vercel AI SDK v4 (`ai@7`, `@ai-sdk/google`, `@ai-sdk/react`)
-- Zod (tool schema validation)
-- streamdown (streaming markdown renderer)
+## Screenshots
 
-## AI tool contract
+> Replace paths below with actual screenshots after taking them.
 
-### `searchRecipes`
+| | |
+|---|---|
+| ![Home](./docs/screenshots/home.png) | ![Assistant](./docs/screenshots/assistant.png) |
+| Home — shader hero | Assistant — streaming chat with tool result |
+| ![Recipe](./docs/screenshots/recipe.png) | ![3D Viewer](./docs/screenshots/3d-viewer.png) |
+| Recipe detail | 3D Viewer with configurator |
 
-Defined in `lib/tools.ts`. Registered in `app/api/chat/route.ts` via `streamText({ tools })`.
+---
 
-**Description:** Searches TheMealDB by ingredient or meal name. The model calls this when the user asks what to cook, requests recipes for a specific ingredient, or names a dish.
+## Running locally
 
-**Input schema:**
+### Prerequisites
 
-| Field | Type | Description |
-|---|---|---|
-| `query` | `string` | Ingredient or meal name (e.g. `"chicken"`, `"tikka masala"`) |
+- Node.js 22+
+- A Google AI Studio API key (free): https://aistudio.google.com/app/apikey
 
-**Return shape:**
-
-```ts
-{
-  meals: Array<{
-    id:        string;   // TheMealDB meal ID — links to /recipe/[id]
-    name:      string;   // Display name
-    thumbnail: string;   // CDN image URL (aspect-ratio 1:1)
-    category:  string;   // e.g. "Chicken", "Vegetarian"
-    area:      string;   // e.g. "Indian", "Italian"
-  }>;
-  error: string | null;  // null on success; human-readable message on failure
-}
-```
-
-**UI lifecycle states** (rendered in `app/assistant/page.tsx`):
-
-| State | Trigger | Rendered as |
-|---|---|---|
-| `partial-call` | Args streaming in | Spinner + "Preparing search…" |
-| `call` | Args ready, awaiting execute | Spinner + "Searching for \"{query}\"…" |
-| `result` (success) | execute returned meals | `RecipeToolResult` grid component |
-| `result` (error) | execute returned non-null error | Red error card with message |
-
-## FE-AA2: 3D Viewer (`/playground/3d-viewer`)
-
-An interactive 3D scene built with React Three Fiber and `@react-three/drei`.
-
-**What's in the scene:**
-- Animated procedural torus (donut) with 8 orbiting ingredient particles — no external model asset, zero network requests for the default view
-- Drag-and-drop any `.glb` / `.gltf` file onto the viewport to replace the default scene; the model is auto-centered and scaled via `<Bounds fit clip observe>`
-- Material configurator: color presets + custom picker, metalness, roughness, wireframe toggle
-- Environment lighting: 7 HDR presets (studio, city, forest, dawn, sunset, park, night) via `@react-three/drei`'s `Environment`
-- Auto-rotate toggle with speed control; OrbitControls with damping for orbit/zoom/pan
-- `prefers-reduced-motion: reduce` → Canvas unmounts, static SVG fallback renders instead
-
-**Performance notes:**
-- Three.js + R3F chunk is ~480 KB gzipped. The Canvas is wrapped in `next/dynamic` with `ssr: false` so it is code-split from every other route — zero cost to LCP on Home, Search, or Assistant pages.
-- Default scene is fully procedural; no GLB/HDR fetches until the user interacts with the environment selector or drops a file.
-- `dpr={[1, 2]}` caps pixel ratio at 2× retina. `performance={{ min: 0.5 }}` enables R3F's adaptive DPR, halving resolution under frame-rate pressure on mid-range mobile.
-- Object URLs created from dropped files are revoked when a new file is loaded or the component unmounts.
-
-**What I'd add with more time:**
-- DRACO/meshopt-compressed default model so users see a recognisable 3D object without uploading one
-- Post-processing bloom on high-metalness surfaces (`@react-three/postprocessing`)
-- Canvas `toDataURL` screenshot button
-- Per-mesh material editing (click to select a mesh, tweak independently)
-- Progress overlay during large GLB loads using `useProgress`
-
-## Getting started
+### Steps
 
 ```bash
 git clone https://github.com/mahtamun-hoque-fahim/FE-Journey.git
 cd FE-Journey
 npm install
-npm run dev
 ```
 
-Copy `.env.local.example` to `.env.local` and add your `GOOGLE_GENERATIVE_AI_API_KEY` to use the assistant.
+Create `.env.local`:
 
-Open `http://localhost:3000`.
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=your_key_here
+```
 
-## Project history
+```bash
+npm run dev
+# → http://localhost:3000
+```
 
-This repo also contains earlier internship assignments on separate branches:
+### Other scripts
 
-- `feat/settings-vague`, `feat/settings-precise` — AI-assisted workflow drill (vague vs. precise prompting comparison)
-- `feat/recipe-app-v1` — original Vite/React recipe finder prototype, superseded by this Next.js build
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start Next.js dev server (Turbopack) |
+| `npm run build` | Production build |
+| `npm run test` | Vitest unit tests (29 tests) |
+| `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run test:watch` | Vitest in watch mode |
 
-## License
+---
 
-This project is licensed under the [MIT License](LICENSE).
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes | Google AI Studio key for Gemini. Get one free at aistudio.google.com |
+
+No database, no auth, no other secrets. The app is stateless except for localStorage favorites.
+
+---
+
+## Architecture
+
+```
+fe-journey/
+├── app/
+│   ├── api/chat/route.ts      # Streaming AI route — POST /api/chat
+│   ├── assistant/page.tsx     # AI chat UI
+│   ├── recipe/[id]/page.tsx   # Dynamic recipe detail
+│   ├── search/page.tsx        # TheMealDB search
+│   ├── playground/
+│   │   ├── 3d-viewer/         # React Three Fiber GLB viewer (FE-AA2)
+│   │   └── buttons/           # SmartButton demo (FE-AA1)
+│   └── layout.tsx             # Root layout — NavBar, skip link, shader hero
+├── components/
+│   ├── shader-hero.tsx        # WebGL fullscreen GLSL canvas (FE-AA3)
+│   ├── smart-button.tsx       # 5-state button (idle/loading/success/error)
+│   ├── recipe-tool-result.tsx # Tool result card for searchRecipes
+│   ├── nav-bar.tsx            # Site nav with aria-current
+│   └── nav-link.tsx           # Active link client component
+├── lib/
+│   ├── chat-config.ts         # Model (Gemini Flash) + system prompt
+│   └── tools.ts               # searchRecipes Zod-typed tool definition
+├── __tests__/                 # Vitest + RTL unit tests (29 tests)
+├── e2e/                       # Playwright E2E tests
+├── audit-assets/              # FE-10 Lighthouse before/after screenshots
+└── AUDIT.md                   # Accessibility and performance audit
+```
+
+### Key decisions
+
+**AI SDK v7 (`ai@7`)** — The SDK changed its API significantly between v3 and v7 during the build. Breaking changes hit mid-assignment: `parameters` → `inputSchema`, `maxSteps` → `stopWhen: isStepCount(n)`, and `toDataStreamResponse()` → `toUIMessageStreamResponse()`. Each was debugged in production.
+
+**Gemini Flash** — Chosen over GPT-4 because it's fast enough for token-by-token streaming, stays on the Google AI Studio free tier at normal chat volume, and the `@ai-sdk/google` package gives it the same interface as any other provider.
+
+**React Three Fiber over raw Three.js** — R3F integrates with React's lifecycle so canvas state (drag-and-drop GLB, material config) lives in useState hooks rather than mutable refs. Lazy-loaded via `next/dynamic + ssr:false` so the ~480 KB chunk never touches non-3D routes.
+
+**Raw WebGL for the shader hero** — A fullscreen quad shader only needs a vertex shader, a fragment shader, and six vertices. Adding Three.js or R3F on top would be 100× the overhead. The GLSL itself is domain-warped FBM with `u_time`, `u_resolution`, and `u_mouse`.
+
+**No database** — Favorites use localStorage. The capstone scope didn't need persistence across devices, and cutting the database removes one failure point and keeps the free-tier deployment clean.
+
+**`next/font` for Google Sans** — Inlines the font-face CSS and preloads the WOFF2 file at build time. Zero render-blocking font requests.
+
+---
+
+## API route — abuse protection
+
+`POST /api/chat` has two stateless guards:
+
+- **Message count cap:** requests with more than 20 turns are rejected with `400` before reaching Gemini.
+- **Input length cap:** if the latest user message exceeds 1 000 characters, the request is rejected with `400`.
+- **`maxDuration = 30`:** Vercel serverless timeout raised from the default 10 s so long generations aren't cut mid-stream, but the function can't run indefinitely.
+
+No rate limiting per IP is implemented (would require Redis/Upstash). For a production product this would be the next addition.
+
+---
+
+## How AI tools built this
+
+This section documents actual AI assistance, not platitudes.
+
+**Claude (Anthropic) — primary assistant throughout:**
+
+- Debugged the AI SDK v7 breaking changes. When `parameters` was renamed to `inputSchema` and `maxSteps` to `stopWhen: isStepCount(n)`, Claude read the SDK source in `node_modules` directly and identified the exact renamed exports. This saved hours of reading a partially-updated changelog.
+- Wrote the Vitest + RTL test suite, including the React 19 async `act()` pattern. The key insight — that state updates from un-awaited async handlers require `await act(async () => { await Promise.resolve(); })` to flush — came from Claude reading the `@testing-library/react` internals.
+- Wrote the Playwright E2E tests including the UI Message Stream mock response format. Claude read `default-chat-transport.ts` and `ui-message-chunks.ts` in the `ai` package to get the exact SSE format that `DefaultChatTransport` expects.
+- Diagnosed the Node.js 22 requirement for jsdom/undici v6 in the CI workflow by reading the error trace and cross-referencing `webidl.util.markAsUncloneable` to Node.js internals.
+- Wrote the GLSL fragment shader (`components/shader-hero.tsx`) with full explanations of domain-warped FBM and explained each block on demand.
+
+**What Claude could not do:**
+
+- Run Lighthouse or WAVE (requires a browser). All audit scores were obtained by running PageSpeed Insights manually against the live URL.
+- Take screenshots. All visual verification was done by the developer in a real browser.
+- Cross-browser test. Safari-specific Mobile Safari bugs (the `100vh` keyboard-resize issue) were identified by Claude from known patterns and fixed with `dvh`, but only the developer could verify the fix on a real device.
+
+**Pattern:** Claude was most valuable for tasks with deterministic correct answers — API formats, type errors, ARIA spec compliance, WebGL boilerplate. It was less useful for aesthetic decisions (the shader palette, layout proportions) which were iterated manually.
+
+---
+
+## Assignments completed
+
+| Code | Title | Status |
+|---|---|---|
+| FE-01 | Repo setup | Done |
+| FE-03 | AI workflow drill | Done |
+| FE-04 | Capstone skeleton | Done |
+| FE-05 | Accessible components | Done |
+| FE-06 | Streaming AI chat | Done |
+| FE-07 | Tool calling | Done |
+| FE-08 | Error states | Done |
+| FE-AA1 | Buttons with a Brain | Done |
+| FE-09 | Testing pass | Done |
+| FE-AA2 | 3D Viewer | Done |
+| FE-10 | Accessibility & performance audit | Done — 100 a11y on both pages |
+| FE-AA3 | Signature shader hero | Done |
+| FE-11 | Production deployment & README | Done |
+
+---
+
+## Deployment
+
+Deployed on Vercel (Hobby, free tier). Auto-deploys on push to `master`.
+
+CI: GitHub Actions runs Vitest (Node 22) and Playwright on every push and pull request to `master`. Both jobs must pass before merging.
