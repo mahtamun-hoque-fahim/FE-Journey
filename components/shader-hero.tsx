@@ -303,7 +303,7 @@ export function ShaderHero({ children }: ShaderHeroProps) {
     // The CSS gradient is the prefers-reduced-motion fallback AND the
     // background shown before WebGL initialises — zero layout shift.
     <section
-      className="relative flex min-h-dvh flex-col justify-center overflow-hidden"
+      className="relative h-dvh overflow-hidden"
       style={{
         background:
           "linear-gradient(135deg, #020905 0%, #063d1a 45%, #010d05 100%)",
