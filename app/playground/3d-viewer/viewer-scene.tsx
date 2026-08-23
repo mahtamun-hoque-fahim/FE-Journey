@@ -11,7 +11,7 @@ import {
   Html,
   useProgress,
 } from "@react-three/drei";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Eye, EyeOff, Loader2, RotateCcw, Upload } from "lucide-react";
 
@@ -37,9 +37,9 @@ interface SceneConfig {
 }
 
 const DEFAULT_CONFIG: SceneConfig = {
-  color: "#f59e0b",
-  metalness: 0.4,
-  roughness: 0.3,
+  color: "#FFB7C5",   // strawberry frosting — change with the colour picker
+  metalness: 0.1,
+  roughness: 0.5,
   wireframe: false,
   envPreset: "studio",
   autoRotate: true,
@@ -79,33 +79,52 @@ function SceneLoader() {
   );
 }
 
-// ── Default procedural model: animated donut with orbiting particles ──────────
+// ── Default model: cupcake built from Three.js primitives ───────────────────
+// Wrapper → cake body → frosting dome + swirl rings → cherry + stem + sprinkles.
+// The frosting colour, metalness, roughness, and wireframe all respond to the
+// configurator panel. Wrapper and cherry keep their natural colours.
+
+const SPRINKLE_COLORS = ["#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#e879f9", "#f97316"];
 
 function DefaultModel({ config }: { config: SceneConfig }) {
   const groupRef = useRef<THREE.Group>(null!);
-  const particleRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const cherryRef = useRef<THREE.Mesh>(null!);
+
+  // Sprinkle positions computed once — stable across re-renders.
+  const sprinkles = useMemo(
+    () =>
+      Array.from({ length: 26 }, (_, i) => {
+        // Distribute evenly in theta, randomise phi on the lower hemisphere dome
+        const theta = (i / 26) * Math.PI * 2 + Math.random() * 0.4;
+        const phi   = 0.35 + Math.random() * 1.05; // lower half of dome
+        const r     = 0.52;
+        return {
+          // position on hemisphere surface (dome center is at group-y 0.52)
+          x: r * Math.sin(phi) * Math.cos(theta),
+          y: 0.52 + r * Math.cos(phi),
+          z: r * Math.sin(phi) * Math.sin(theta),
+          color: SPRINKLE_COLORS[i % SPRINKLE_COLORS.length],
+          rotX: Math.random() * Math.PI,
+          rotZ: Math.random() * Math.PI,
+        };
+      }),
+    []
+  );
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
-    // Gentle float + subtle tilt
-    groupRef.current.position.y = Math.sin(t * 0.6) * 0.12;
-    groupRef.current.rotation.z = Math.sin(t * 0.22) * 0.05;
-    // Orbit the particles at varying speeds and heights
-    particleRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
-      const speed = 0.35 + i * 0.07;
-      const angle = t * speed + (i * Math.PI * 2) / 8;
-      const radius = 1.8 + Math.sin(t * 0.4 + i) * 0.04;
-      const height = Math.sin(t * 0.5 + i * 0.9) * 0.18;
-      mesh.position.set(
-        Math.cos(angle) * radius,
-        height,
-        Math.sin(angle) * radius
-      );
-    });
+    // Gentle float
+    groupRef.current.position.y = Math.sin(t * 0.55) * 0.09 - 0.25;
+    // Slow auto-spin handled by OrbitControls.autoRotate — only add a tiny
+    // independent sway so it looks alive even with autoRotate off.
+    groupRef.current.rotation.y = Math.sin(t * 0.18) * 0.12;
+    // Cherry bobs independently — cute micro-animation
+    if (cherryRef.current) {
+      cherryRef.current.position.y = 1.22 + Math.sin(t * 1.6 + 1) * 0.025;
+    }
   });
 
-  const mat = {
+  const frostingMat = {
     color: config.color,
     metalness: config.metalness,
     roughness: config.roughness,
@@ -113,41 +132,84 @@ function DefaultModel({ config }: { config: SceneConfig }) {
   };
 
   return (
-    <group ref={groupRef}>
-      {/* Main torus — the donut */}
+    <group ref={groupRef} position={[0, -0.25, 0]}>
+      {/* ── Paper wrapper (tapered cylinder) ─────────────────────────── */}
       <mesh castShadow receiveShadow>
-        <torusGeometry args={[1, 0.38, 32, 100]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-
-      {/* Inner accent ring — sits inside the hole */}
-      <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.58, 0.022, 8, 64]} />
+        <cylinderGeometry args={[0.5, 0.4, 0.65, 32]} />
         <meshStandardMaterial
-          color={config.color}
-          metalness={Math.min(config.metalness + 0.35, 1)}
-          roughness={Math.max(config.roughness - 0.25, 0)}
+          color="#f5e6c8"
+          metalness={0}
+          roughness={0.85}
           wireframe={config.wireframe}
         />
       </mesh>
 
-      {/* Orbiting ingredient particles */}
-      {Array.from({ length: 8 }).map((_, i) => (
+      {/* ── Cake body (sits on top of wrapper) ───────────────────────── */}
+      <mesh castShadow position={[0, 0.43, 0]}>
+        <cylinderGeometry args={[0.5, 0.5, 0.21, 32]} />
+        <meshStandardMaterial
+          color="#c4956a"
+          metalness={0}
+          roughness={0.75}
+          wireframe={config.wireframe}
+        />
+      </mesh>
+
+      {/* ── Frosting: base dome (lower hemisphere) ───────────────────── */}
+      <mesh castShadow position={[0, 0.52, 0]}>
+        {/* phiLength = PI/2 → bottom half of sphere only */}
+        <sphereGeometry args={[0.52, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial {...frostingMat} />
+      </mesh>
+
+      {/* ── Frosting: swirl ring 1 (widest, closest to base) ─────────── */}
+      <mesh castShadow position={[0, 0.68, 0]}>
+        <torusGeometry args={[0.3, 0.11, 16, 40]} />
+        <meshStandardMaterial {...frostingMat} />
+      </mesh>
+
+      {/* ── Frosting: swirl ring 2 ────────────────────────────────────── */}
+      <mesh castShadow position={[0, 0.9, 0]} rotation={[0, Math.PI / 6, 0]}>
+        <torusGeometry args={[0.18, 0.09, 16, 32]} />
+        <meshStandardMaterial {...frostingMat} />
+      </mesh>
+
+      {/* ── Frosting: swirl tip (small sphere at top of piping) ──────── */}
+      <mesh castShadow position={[0, 1.07, 0]}>
+        <sphereGeometry args={[0.09, 16, 16]} />
+        <meshStandardMaterial {...frostingMat} />
+      </mesh>
+
+      {/* ── Cherry ───────────────────────────────────────────────────── */}
+      <mesh castShadow position={[0, 1.22, 0]} ref={cherryRef}>
+        <sphereGeometry args={[0.1, 20, 20]} />
+        <meshStandardMaterial
+          color="#c0392b"
+          metalness={0.25}
+          roughness={0.25}
+          wireframe={config.wireframe}
+        />
+      </mesh>
+
+      {/* ── Cherry stem ──────────────────────────────────────────────── */}
+      <mesh castShadow position={[0.045, 1.35, 0]} rotation={[0, 0, 0.35]}>
+        <cylinderGeometry args={[0.014, 0.014, 0.2, 8]} />
+        <meshStandardMaterial color="#2d6a4f" metalness={0} roughness={0.9} />
+      </mesh>
+
+      {/* ── Sprinkles ─────────────────────────────────────────────────── */}
+      {sprinkles.map((s, i) => (
         <mesh
           key={i}
           castShadow
-          ref={(el) => {
-            particleRefs.current[i] = el;
-          }}
-          scale={0.07 + (i % 3) * 0.028}
+          position={[s.x, s.y, s.z]}
+          rotation={[s.rotX, 0, s.rotZ]}
         >
-          <sphereGeometry args={[1, 16, 16]} />
+          <boxGeometry args={[0.03, 0.13, 0.03]} />
           <meshStandardMaterial
-            color={config.color}
-            metalness={config.metalness}
-            roughness={config.roughness + 0.1}
-            emissive={config.color}
-            emissiveIntensity={0.08}
+            color={s.color}
+            metalness={0.1}
+            roughness={0.4}
           />
         </mesh>
       ))}
