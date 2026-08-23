@@ -119,20 +119,20 @@ void main() {
   float f = fbm(st + 3.0 * r + t * 0.25);
 
   // --- Colour ---
-  // Three-stop gradient in the Flavorly warm palette:
-  //   c0  deep near-black  (base / shadow)
-  //   c1  amber            (mid-range)
-  //   c2  saffron gold     (bright peaks)
-  vec3 c0 = vec3(0.06, 0.03, 0.01);
-  vec3 c1 = vec3(0.62, 0.28, 0.04);
-  vec3 c2 = vec3(0.90, 0.65, 0.20);
+  // Three-stop gradient — Flavorly green palette:
+  //   c0  near-black base (shadow / depth)
+  //   c1  deep forest green (mid-range)
+  //   c2  vibrant mint (bright peaks — matches --accent CSS var)
+  vec3 c0 = vec3(0.01, 0.03, 0.02);
+  vec3 c1 = vec3(0.02, 0.22, 0.10);
+  vec3 c2 = vec3(0.06, 0.72, 0.38);
 
   vec3 col = mix(c0, c1, smoothstep(0.0, 0.55, f));
        col = mix(col, c2, smoothstep(0.45, 0.90, f) * 0.75);
 
-  // Brand-accent thread: a whisper of Flavorly green on the brightest peaks.
-  vec3 accent = vec3(0.14, 0.90, 0.58); // #23E694, matches --accent CSS var
-  col = mix(col, accent, smoothstep(0.80, 0.95, f) * 0.22);
+  // Bright mint accent on the very highest peaks — #3DF49A
+  vec3 accent = vec3(0.24, 0.96, 0.60);
+  col = mix(col, accent, smoothstep(0.80, 0.95, f) * 0.28);
 
   // --- Vignette ---
   // Darkens edges so overlaid white text retains contrast in all quadrants.
@@ -303,10 +303,10 @@ export function ShaderHero({ children }: ShaderHeroProps) {
     // The CSS gradient is the prefers-reduced-motion fallback AND the
     // background shown before WebGL initialises — zero layout shift.
     <section
-      className="relative overflow-hidden"
+      className="relative flex min-h-dvh flex-col justify-center overflow-hidden"
       style={{
         background:
-          "linear-gradient(135deg, #0f0502 0%, #2a0f01 45%, #080e07 100%)",
+          "linear-gradient(135deg, #020905 0%, #063d1a 45%, #010d05 100%)",
       }}
     >
       {/* WebGL canvas — absolutely fills the section, fades in after first frame */}

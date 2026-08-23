@@ -9,7 +9,7 @@ export default function Home() {
            The hero content below is server-rendered and passed as children,
            which sit above the canvas at z-10. */}
       <ShaderHero>
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-24 sm:px-6 sm:py-32">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-20 sm:px-6">
           <span className="w-fit rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-medium text-white/70 backdrop-blur-sm">
             Powered by TheMealDB
           </span>
