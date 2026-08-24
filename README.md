@@ -186,3 +186,29 @@ This section documents actual AI assistance, not platitudes.
 Deployed on Vercel (Hobby, free tier). Auto-deploys on push to `master`.
 
 CI: GitHub Actions runs Vitest (Node 22) and Playwright on every push and pull request to `master`. Both jobs must pass before merging.
+
+---
+
+## Known limitations & future improvements
+
+### Current limitations
+
+| Area | Limitation |
+|---|---|
+| Rate limiting | No per-IP request cap — guards are stateless (message count + input length only). A sustained flood could exhaust the Gemini free-tier quota. Mitigation: Upstash Redis would add token-bucket limiting in ~30 lines. |
+| Favorites | `localStorage` only — not synced across devices or browsers. Clearing browser storage silently wipes all saved recipes. |
+| Recipe data | TheMealDB is the only source. No ingredient-based search ("what can I cook with eggs and spinach?"), no nutritional data, no user-submitted recipes. |
+| 3D viewer safety | The GLB drag-and-drop endpoint has no file-size cap. A large model file will exhaust browser memory without a graceful error. |
+| 3D viewer accessibility | The viewer content (3D model) is not described to screen reader users. A visually-hidden description of the current model is the correct fix. |
+| Shader on low-end devices | The GLSL hero runs at the display's native resolution. On mobile Safari with a high-DPI screen, `devicePixelRatio` can push fragment workload high. A resolution cap (`Math.min(devicePixelRatio, 2)`) would help. |
+| No monitoring | No error tracking (Sentry, Axiom) in production. Failures surface only in Vercel function logs, which expire after 7 days. |
+
+### Future improvements
+
+1. **Upstash Redis rate limiting** — token bucket per IP on `/api/chat`, so the Gemini key survives a public demo link going viral
+2. **Ingredient-based search** — TheMealDB supports filtering by ingredient; wiring it up via a second tool (`findRecipesByIngredients`) would double the assistant's usefulness
+3. **Persistent favorites** — replace `localStorage` with a Neon/Drizzle table behind Better Auth; users keep their list across devices
+4. **Voice input** — the Web Speech API works in modern browsers; a mic button on the chat input would make mobile use significantly faster
+5. **Export to PDF** — a single recipe should be printable in a clean format; `react-pdf` is the obvious path
+6. **Model description for 3D viewer** — add a `<p aria-live="polite">` that updates with the current model name and material state when a file is loaded
+
