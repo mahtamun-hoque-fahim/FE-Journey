@@ -1,54 +1,42 @@
 # Case Study Playbook
 
-**Portfolio:** mahtamundesigns.com  
+**Portfolio:** mahtamunhoquefahim.vercel.app  
 **Case study location:** `/clients/[slug]` — dynamic pages driven by the admin dashboard (Next.js 16, Neon/Drizzle, Cloudinary, Better Auth)
 
 ---
 
 ## How to add the next case (concrete steps)
 
-1. Log into `mahtamundesigns.com/admin` with the Better Auth session
+1. Log into `mahtamunhoquefahim.vercel.app/admin` with the Better Auth session
 2. Navigate to **Clients** — click **Add Project**, fill in: slug, title, cover image (Cloudinary upload)
 3. Write the three-beat body — no more, no less:
    - **Problem** — one sentence: what was broken, missing, or needed before this project existed?
    - **What I did** — two or three sentences: the approach, the key stack choices, the hardest constraint solved
    - **What came of it** — one sentence: the outcome, the metric, or the live URL
 4. Add tags, set visibility to **Published**, hit Save
-5. The `/clients/[slug]` page is live immediately via server-rendered dynamic routing — no redeploy needed
+5. The `/clients/[slug]` page is live immediately via server-rendered dynamic routing — no redeploy required
 
-Total time per case: roughly 20 minutes with notes already in hand.  
+With notes already in hand, this takes roughly 20 minutes.  
 With the Claude Project that already holds the voice, stack, and identity kit, the copy step is a single prompt — not a rebuild.
 
 ---
 
 ## Next piece to add
 
-**Blacksmith** — AI-powered Android Studio Kotlin project generator SaaS
+**ImageSmith** — browser-only batch image converter (WebP, AVIF, PNG, JPEG)
 
-> **Problem:** Bootstrapping a new Android Studio project means 30+ minutes of boilerplate — manifest wiring, Gradle config, dependency declarations, base architecture files — before a single line of real app logic gets written.
+> **Problem:** Converting images between formats means installing native tools or uploading to third-party sites that keep your files. There was no fast, private, browser-native option that handled batches without a server.
 >
-> **What I did:** Built Blacksmith: a Next.js 16 SaaS where Gemini 2.0 Flash generates the full Kotlin project tree server-side via Server Actions, JSZip packages it into a downloadable `.zip`, and Lemon Squeezy handles billing. Auth via Better Auth, per-user rate limiting via Upstash Redis, project schema in Neon/Drizzle. Full POST-BUILD pipeline complete — Waterborne, Motion Hive, Airborne, Sentinel all passed.
+> **What I did:** Built ImageSmith: a fully client-side converter using WebAssembly — files never leave the device. Batch processing runs sequentially via `for...of` (not `Promise.all`) to prevent WASM heap collisions, with a `.slice()` copy before each encode and no manual `free()` call. Shipped v0.2.0 at image-smith-nine.vercel.app with a star rating system, Clash Display font via Fontshare CDN, and a dark `#0A0D15` palette.
 >
-> **What came of it:** Pre-launch. Smoke testing and payment config are the only remaining gates. The generator produces a ready-to-open Android Studio project in under 10 seconds.
+> **What came of it:** v0.2.0 live. Zero server, zero file uploads, batch-converts any number of images entirely in the browser.
 
 ---
 
 ## Reminder set
 
-GitHub Issue opened in this repo: **"Add Blacksmith case study to mahtamundesigns after launch"**  
-See: [Issues tab](https://github.com/mahtamun-hoque-fahim/FE-Journey/issues)
-
-The issue carries the full three-beat draft above so the actual add step is a copy-paste, not a memory exercise.
+GitHub Issue — "Add ImageSmith case study to mahtamunhoquefahim.vercel.app" — created in this repo as a pinned reminder. Link below.
 
 ---
 
-## Claude Project preserved
-
-This project's Claude conversation holds:
-
-- Voice and tone (direct, no filler, lucide-react only, no emojis)
-- Full stack defaults (Next.js 16, Tailwind v4, Neon/Drizzle, Better Auth, Vercel + Cloudflare)
-- Identity kit (brand: Mahtamun, palette, font choices per project)
-- The Citadel pipeline sequence (Singularity → Council → Waterborne → Motion Hive → Airborne → Sentinel → …)
-
-The next case study is a short conversation, not a rebuild.
+*Claude Project preserved. Stack, voice, and identity kit are intact. The next case is a conversation, not a rebuild.*
