@@ -7,7 +7,7 @@ import { google } from "@ai-sdk/google";
 
 // Flash is fast enough for token-by-token chat streaming and stays
 // on Gemini's free tier at normal conversation volume.
-export const CHAT_MODEL = google("gemini-2.0-flash");
+export const CHAT_MODEL = google("gemini-2.5-flash");
 
 export const SYSTEM_PROMPT = `You are the Flavorly Recipe Assistant, built into the Flavorly recipe app.
 

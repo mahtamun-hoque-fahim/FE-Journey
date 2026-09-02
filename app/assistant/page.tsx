@@ -325,7 +325,9 @@ export default function AssistantPage() {
                     Response failed
                   </p>
                   <p className="text-xs text-red-400/70">
-                    Connection interrupted or the model timed out.
+                    {error?.message && !error.message.includes("undefined")
+                      ? error.message
+                      : "Connection interrupted or the model timed out."}
                   </p>
                 </div>
                 <button
