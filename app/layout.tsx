@@ -26,7 +26,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${googleSans.variable} h-dvh antialiased`}
     >
-      <body className="relative min-h-dvh flex flex-col bg-background text-foreground">
+      <body className="relative h-dvh flex flex-col overflow-hidden bg-background text-foreground">
         {/* Skip link — first focusable element; invisible until focused.
             Keyboard users press Tab → Enter to jump past the nav. */}
         <a
