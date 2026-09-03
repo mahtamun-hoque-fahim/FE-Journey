@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Clock, Globe, Tag } from "lucide-react";
+import { FavoriteButton } from "@/components/favorite-button";
 
 // TheMealDB public lookup — no API key required.
 interface RawMeal {
@@ -91,6 +92,15 @@ export default async function RecipeDetailPage({
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {meal.strMeal}
         </h1>
+        <FavoriteButton
+          meal={{
+            idMeal: meal.idMeal,
+            strMeal: meal.strMeal,
+            strMealThumb: meal.strMealThumb,
+            strCategory: meal.strCategory,
+            strArea: meal.strArea,
+          }}
+        />
       </div>
 
       {/* Hero image */}
