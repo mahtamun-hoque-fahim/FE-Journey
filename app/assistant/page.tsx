@@ -194,19 +194,18 @@ export default function AssistantPage() {
           response cycle via the useEffect below. */}
       <StatusAnnouncer status={status} messages={messages} isBusy={isBusy} />
 
-      <div className="relative flex-1 min-h-0 overflow-hidden">
-        {/* role="log" implies aria-live="polite" + aria-relevant="additions".
-            New message bubbles are announced when added; streaming character
-            changes inside an existing bubble are not re-announced, which
-            avoids flooding the AT output queue. */}
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          role="log"
-          aria-label="Conversation history"
-          aria-busy={isBusy}
-          className="flex h-full flex-col gap-5 overflow-y-auto overscroll-y-contain py-6"
-        >
+      {/* role="log" implies aria-live="polite" + aria-relevant="additions".
+          New message bubbles are announced when added; streaming character
+          changes inside an existing bubble are not re-announced, which
+          avoids flooding the AT output queue. */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        role="log"
+        aria-label="Conversation history"
+        aria-busy={isBusy}
+        className="relative flex-1 min-h-0 flex flex-col gap-5 overflow-y-auto overscroll-y-contain py-6"
+      >
           {messages.length === 0 && (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-muted">
@@ -341,17 +340,17 @@ export default function AssistantPage() {
               </div>
             </div>
           )}
-        </div>
-
         {!autoScroll && (
-          <button
-            type="button"
-            onClick={jumpToLatest}
-            className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-foreground shadow-lg backdrop-blur transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <ArrowDown className="h-3 w-3" aria-hidden="true" />
-            Jump to latest
-          </button>
+          <div className="sticky bottom-0 flex justify-center pb-2 pt-1">
+            <button
+              type="button"
+              onClick={jumpToLatest}
+              className="flex items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-foreground shadow-lg backdrop-blur transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <ArrowDown className="h-3 w-3" aria-hidden="true" />
+              Jump to latest
+            </button>
+          </div>
         )}
       </div>
 
