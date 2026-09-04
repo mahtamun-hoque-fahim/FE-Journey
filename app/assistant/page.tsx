@@ -138,7 +138,15 @@ export default function AssistantPage() {
         (part) => isTextUIPart(part) && part.text.trim().length > 0
       ));
 
-  // Auto-scroll: pin to bottom only while the user is already there.
+  const [slowResponse, setSlowResponse] = useState(false);
+
+  // Show a "taking longer than usual" note after 8 s of thinking.
+  // Clears as soon as a response arrives.
+  useEffect(() => {
+    if (!isThinking) { setSlowResponse(false); return; }
+    const t = setTimeout(() => setSlowResponse(true), 8000);
+    return () => clearTimeout(t);
+  }, [isThinking]);
   useEffect(() => {
     if (autoScroll && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -296,17 +304,24 @@ export default function AssistantPage() {
               once without repeating per-frame. motion-reduce disables the
               animation but keeps the indicator visible. */}
           {isThinking && (
-            <div
-              className="flex items-center gap-2"
-              role="status"
-              aria-label="Flavorly is thinking"
-            >
-              <ChefHat className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-              <div className="flex items-center gap-1" aria-hidden="true">
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.3s] motion-reduce:animate-none" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.15s] motion-reduce:animate-none" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 motion-reduce:animate-none" />
+            <div className="flex flex-col gap-1">
+              <div
+                className="flex items-center gap-2"
+                role="status"
+                aria-label="Flavorly is thinking"
+              >
+                <ChefHat className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                <div className="flex items-center gap-1" aria-hidden="true">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.3s] motion-reduce:animate-none" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 [animation-delay:-0.15s] motion-reduce:animate-none" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-accent/70 motion-reduce:animate-none" />
+                </div>
               </div>
+              {slowResponse && (
+                <p className="pl-6 text-xs text-muted">
+                  Taking a little longer than usual — still working on it&hellip;
+                </p>
+              )}
             </div>
           )}
 
