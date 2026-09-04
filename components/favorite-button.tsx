@@ -24,7 +24,7 @@ export function FavoriteButton({ meal }: { meal: FavoriteMeal }) {
       onClick={handleToggle}
       aria-label={saved ? "Remove from favorites" : "Save to favorites"}
       aria-pressed={saved}
-      className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+      className={`flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
         saved
           ? "border-accent/50 bg-accent/10 text-accent"
           : "border-border bg-surface text-muted hover:border-accent/30 hover:text-foreground"

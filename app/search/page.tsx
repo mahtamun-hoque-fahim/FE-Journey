@@ -58,7 +58,7 @@ export default function SearchPage() {
   const hasSearched = searched !== null || error !== null;
 
   return (
-    <div className="relative flex flex-1 flex-col items-center overflow-y-auto">
+    <div className="relative flex flex-1 min-h-0 flex-col items-center overflow-y-auto">
       {/* ── Search bar ───────────────────────────────────────────────── */}
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center gap-6 px-4 py-20 text-center sm:px-6">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">

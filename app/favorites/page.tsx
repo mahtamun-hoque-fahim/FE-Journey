@@ -22,7 +22,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 overflow-y-auto px-4 py-12 sm:px-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 min-h-0 flex-col gap-8 overflow-y-auto px-4 py-12 sm:px-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">Favorites</h1>
         <p className="text-sm text-muted">
