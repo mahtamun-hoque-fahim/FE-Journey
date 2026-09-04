@@ -37,7 +37,7 @@ export default function RootLayout({
         </a>
         <BottomGlow />
         <NavBar />
-        <main id="main-content" className="flex flex-1 flex-col">
+        <main id="main-content" className="flex flex-1 min-h-0 flex-col">
           {children}
         </main>
       </body>
